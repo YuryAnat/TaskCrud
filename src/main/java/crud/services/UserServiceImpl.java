@@ -1,12 +1,14 @@
 package crud.services;
 
 import crud.dao.UserDao;
+import crud.model.Role;
 import crud.model.User;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Propagation;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
+import java.util.Set;
 
 @Service
 public class UserServiceImpl implements UserService {
@@ -41,5 +43,10 @@ public class UserServiceImpl implements UserService {
     @Override
     public User getUser(long id) {
         return userDao.getUser(id);
+    }
+
+    @Override
+    public User getUserByEmail(String email) {
+        return userDao.getUserByEmail(email);
     }
 }

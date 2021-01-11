@@ -1,56 +1,92 @@
 package crud.model;
 
+import lombok.Data;
+import lombok.NoArgsConstructor;
+import org.springframework.security.core.GrantedAuthority;
+import org.springframework.security.core.userdetails.UserDetails;
+
 import javax.persistence.*;
+import java.util.Collection;
+import java.util.Collections;
+import java.util.Set;
+import java.util.stream.Collectors;
 
 @Entity
 @Table(name = "users")
-public class User {
+@Data
+@NoArgsConstructor
+public class User implements UserDetails {
     @Id
-    @GeneratedValue(strategy = GenerationType.AUTO)
+    @GeneratedValue(strategy = GenerationType.SEQUENCE, generator = "user_seq_gen")
+    @SequenceGenerator(name = "user_seq_gen", sequenceName = "USER_GEN")
+    @OrderBy
     private long id;
-
+    @Column(unique = true)
+    private String email;
     private String name;
     private String lastName;
-    private String email;
+    private String password;
+    @Transient
+    private String confirmPassword;
+    @OneToMany(cascade = CascadeType.REFRESH, fetch = FetchType.EAGER)
+    private Set<Role> roles;
+    private boolean isEnabled;
+    private boolean isCredentialsNonExpired;
+    private boolean isAccountNonLocked;
+    private boolean isAccountNonExpired;
 
-    public User() {
-    }
-
-    public User(String name, String lastName, String email) {
+    public User(String name, String lastName, String email, String password, Set<Role> roles) {
         this.name = name;
         this.lastName = lastName;
         this.email = email;
+        this.password = password;
+        this.roles = roles;
+        this.isEnabled = false;
+        this.isCredentialsNonExpired = true;
+        this.isAccountNonLocked = true;
+        this.isAccountNonExpired = true;
     }
 
-    public long getId() {
-        return id;
+    public Set<String> getRolesNames(){
+        if (null != roles){
+            return roles.stream().map(Role::getRoleName).map(r -> r.replace( "ROLE_", "")).collect(Collectors.toSet());
+        }else {
+            return Collections.emptySet();
+        }
     }
 
-    public void setId(long id) {
-        this.id = id;
+    @Override
+    public Collection<? extends GrantedAuthority> getAuthorities() {
+        return roles;
     }
 
-    public String getName() {
-        return name;
+    @Override
+    public String getPassword() {
+        return password;
     }
 
-    public void setName(String name) {
-        this.name = name;
-    }
-
-    public String getLastName() {
-        return lastName;
-    }
-
-    public void setLastName(String lastName) {
-        this.lastName = lastName;
-    }
-
-    public String getEmail() {
+    @Override
+    public String getUsername() {
         return email;
     }
 
-    public void setEmail(String email) {
-        this.email = email;
+    @Override
+    public boolean isAccountNonExpired() {
+        return isAccountNonExpired;
+    }
+
+    @Override
+    public boolean isAccountNonLocked() {
+        return isAccountNonLocked;
+    }
+
+    @Override
+    public boolean isCredentialsNonExpired() {
+        return isCredentialsNonExpired;
+    }
+
+    @Override
+    public boolean isEnabled() {
+        return isEnabled;
     }
 }
